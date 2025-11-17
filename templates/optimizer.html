@@ -1,0 +1,1709 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Soccer Simulator Optimization Interface</title>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 1.1em;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 350px 1fr;
+            min-height: 800px;
+        }
+
+        .sidebar {
+            background: #f8f9fa;
+            border-right: 2px solid #e0e0e0;
+            padding: 20px;
+            overflow-y: auto;
+            max-height: calc(100vh - 200px);
+        }
+
+        .content-area {
+            padding: 30px;
+            overflow-y: auto;
+            max-height: calc(100vh - 200px);
+        }
+
+        .section {
+            margin-bottom: 30px;
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .section-title {
+            font-size: 1.4em;
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: #667eea;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 8px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+            color: #555;
+            font-size: 0.9em;
+        }
+
+        input[type="text"],
+        input[type="number"],
+        select {
+            width: 100%;
+            padding: 8px 12px;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            font-size: 0.95em;
+            transition: border-color 0.3s;
+        }
+
+        input:focus,
+        select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            height: 6px;
+            border-radius: 3px;
+            background: #ddd;
+            outline: none;
+            -webkit-appearance: none;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: #667eea;
+            cursor: pointer;
+        }
+
+        input[type="range"]::-moz-range-thumb {
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: #667eea;
+            cursor: pointer;
+            border: none;
+        }
+
+        .value-display {
+            display: inline-block;
+            margin-left: 10px;
+            color: #667eea;
+            font-weight: bold;
+        }
+
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: 500;
+            transition: transform 0.2s, box-shadow 0.2s;
+            width: 100%;
+            margin-bottom: 10px;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+        }
+
+        .btn-success {
+            background: #28a745;
+        }
+
+        .btn-danger {
+            background: #dc3545;
+        }
+
+        .btn-warning {
+            background: #ffc107;
+            color: #333;
+        }
+
+        .tabs {
+            display: flex;
+            border-bottom: 2px solid #e0e0e0;
+            margin-bottom: 20px;
+        }
+
+        .tab {
+            padding: 12px 24px;
+            cursor: pointer;
+            background: #f8f9fa;
+            border: none;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s;
+            font-size: 1em;
+            margin-right: 5px;
+            border-radius: 6px 6px 0 0;
+        }
+
+        .tab.active {
+            background: white;
+            border-bottom-color: #667eea;
+            color: #667eea;
+            font-weight: bold;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+
+        .status-running {
+            background: #ffc107;
+            animation: pulse 1.5s infinite;
+            box-shadow: 0 0 8px rgba(255, 193, 7, 0.6);
+        }
+        
+        .status-running::after {
+            content: '';
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            margin-left: 5px;
+            border: 2px solid #ffc107;
+            border-top-color: transparent;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .status-completed {
+            background: #28a745;
+        }
+
+        .status-error {
+            background: #dc3545;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 25px;
+            background: #e0e0e0;
+            border-radius: 12px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            transition: width 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 0.9em;
+        }
+
+        .result-card {
+            background: #f8f9fa;
+            border-left: 4px solid #667eea;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 4px;
+        }
+
+        .result-card h4 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        .result-card p {
+            margin: 5px 0;
+            color: #555;
+        }
+
+        .formation-canvas {
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            background: #2d5016;
+            margin: 15px 0;
+        }
+
+        .file-list {
+            max-height: 200px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 10px;
+            margin: 10px 0;
+        }
+
+        .file-item {
+            padding: 8px;
+            border-bottom: 1px solid #eee;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .file-item:hover {
+            background: #f0f0f0;
+        }
+
+        .file-item:last-child {
+            border-bottom: none;
+        }
+
+        .alert {
+            padding: 12px;
+            border-radius: 6px;
+            margin: 10px 0;
+        }
+
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .alert-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .alert-info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+
+        #optimizationStatus {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 6px;
+            padding: 15px;
+            margin: 10px 0;
+            font-size: 0.9em;
+        }
+        
+        #optimizationStatus p {
+            margin: 8px 0;
+            line-height: 1.6;
+        }
+        
+        #optimizationStatus strong {
+            color: #667eea;
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .param-slider-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .param-slider-group input[type="range"] {
+            flex: 1;
+        }
+
+        code {
+            background: #f4f4f4;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+        }
+
+        .collapsible {
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .collapsible:hover {
+            color: #667eea;
+        }
+
+        .collapsible-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+
+        .collapsible-content.open {
+            max-height: 1000px;
+        }
+
+        .icon {
+            display: inline-block;
+            margin-right: 5px;
+        }
+
+        @media (max-width: 1200px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .sidebar {
+                max-height: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>⚽ Soccer Simulator Optimization Interface</h1>
+            <p>Optimize formations and tactics for your soccer teams</p>
+        </div>
+
+        <div class="main-content">
+            <!-- Sidebar -->
+            <div class="sidebar">
+                <div class="section">
+                    <div class="section-title">Quick Actions</div>
+                    <button onclick="loadDefaults()">📥 Load Defaults</button>
+                    <button onclick="saveCurrentConfig()" class="btn-success">💾 Save Configuration</button>
+                    <button onclick="loadConfiguration()" class="btn-secondary">📂 Load Configuration</button>
+                    <button onclick="runComparison()" class="btn-warning">⚖️ Compare Teams</button>
+                    <button onclick="switchTab('batchtest', null)" class="btn-secondary">⚡ Quick Batch Test</button>
+                </div>
+
+                <div class="section">
+                    <div class="section-title">Optimization Mode</div>
+                    <select id="optimizeMode" onchange="updateOptimizeMode()">
+                        <option value="formation">Optimize Formation Only</option>
+                        <option value="tactics">Optimize Tactics Only</option>
+                        <option value="both">Optimize Both</option>
+                    </select>
+                    <div id="optimizeModeInfo" class="alert alert-info" style="margin-top: 10px; font-size: 0.85em;"></div>
+                </div>
+
+                <div class="section">
+                    <div class="section-title">Optimization Settings</div>
+                    <div class="form-group">
+                        <label>Population Size</label>
+                        <input type="number" id="populationSize" value="30" min="10" max="100" step="5">
+                    </div>
+                    <div class="form-group">
+                        <label>Generations</label>
+                        <input type="number" id="generations" value="20" min="5" max="100" step="5">
+                    </div>
+                    <div class="form-group">
+                        <label>Games per Evaluation</label>
+                        <input type="number" id="numGames" value="20" min="5" max="50" step="5">
+                    </div>
+                    <div class="form-group">
+                        <label>Mutation Rate</label>
+                        <div class="param-slider-group">
+                            <input type="range" id="mutationRate" min="0.05" max="0.3" step="0.05" value="0.15" oninput="updateSliderValue('mutationRate', this.value)">
+                            <span class="value-display" id="mutationRateValue">0.15</span>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Mutation Strength</label>
+                        <div class="param-slider-group">
+                            <input type="range" id="mutationStrength" min="0.05" max="0.2" step="0.01" value="0.1" oninput="updateSliderValue('mutationStrength', this.value)">
+                            <span class="value-display" id="mutationStrengthValue">0.10</span>
+                        </div>
+                    </div>
+                    <button onclick="startOptimization()" id="startOptBtn" class="btn-success">🚀 Start Optimization</button>
+                    <button onclick="stopOptimization()" id="stopOptBtn" class="btn-danger" disabled>⏹️ Stop</button>
+                </div>
+
+                <div class="section">
+                    <div class="section-title">Optimization Status</div>
+                    <div id="optimizationStatus">
+                        <p>No optimization running</p>
+                    </div>
+                    <div class="progress-bar" id="progressBar" style="display: none;">
+                        <div class="progress-fill" id="progressFill" style="width: 0%">0%</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Content Area -->
+            <div class="content-area">
+                <div class="tabs">
+                    <button class="tab active" onclick="switchTab('team1', event)">Team 1 Configuration</button>
+                    <button class="tab" onclick="switchTab('team2', event)">Team 2 (Opponent)</button>
+                    <button class="tab" onclick="switchTab('batchtest', event)">Batch Test</button>
+                    <button class="tab" onclick="switchTab('results', event)">Results & Analysis</button>
+                </div>
+
+                <!-- Team 1 Tab -->
+                <div id="team1Tab" class="tab-content active">
+                    <div class="grid-2">
+                        <div class="section">
+                            <div class="section-title">Formation</div>
+                            <div class="form-group">
+                                <label>Select Formation Preset</label>
+                                <select id="team1FormationPreset" onchange="loadFormationPreset('team1', this.value)">
+                                    <option value="">Custom</option>
+                                    <option value="2-3-1" selected>2-3-1</option>
+                                    <option value="3-2-1">3-2-1</option>
+                                    <option value="2-2-2">2-2-2</option>
+                                    <option value="1-3-2">1-3-2</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Formation Name</label>
+                                <input type="text" id="team1FormationName" value="2-3-1">
+                            </div>
+                            <canvas id="team1FormationCanvas" class="formation-canvas" width="300" height="400"></canvas>
+                            <button onclick="editFormation('team1')" class="btn-secondary">✏️ Edit Formation Positions</button>
+                        </div>
+
+                        <div class="section">
+                            <div class="section-title">Tactical Parameters</div>
+                            <div id="team1TacticsContainer">
+                                <!-- Tactics will be generated here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Team 2 Tab -->
+                <div id="team2Tab" class="tab-content">
+                    <div class="grid-2">
+                        <div class="section">
+                            <div class="section-title">Opponent Formation</div>
+                            <div class="form-group">
+                                <label>Select Formation Preset</label>
+                                <select id="team2FormationPreset" onchange="loadFormationPreset('team2', this.value)">
+                                    <option value="">Custom</option>
+                                    <option value="2-3-1">2-3-1</option>
+                                    <option value="3-2-1" selected">3-2-1</option>
+                                    <option value="2-2-2">2-2-2</option>
+                                    <option value="1-3-2">1-3-2</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Formation Name</label>
+                                <input type="text" id="team2FormationName" value="3-2-1">
+                            </div>
+                            <canvas id="team2FormationCanvas" class="formation-canvas" width="300" height="400"></canvas>
+                        </div>
+
+                        <div class="section">
+                            <div class="section-title">Opponent Tactics</div>
+                            <div id="team2TacticsContainer">
+                                <!-- Tactics will be generated here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Batch Test Tab -->
+                <div id="batchtestTab" class="tab-content">
+                    <div class="section">
+                        <div class="section-title">Quick Batch Test</div>
+                        <p style="margin-bottom: 20px; color: #666;">
+                            Run many games quickly to test performance and compare teams without optimization overhead.
+                        </p>
+                        
+                        <div class="form-group">
+                            <label>
+                                <input type="radio" name="batchTestMode" value="quick" checked onchange="updateBatchTestMode()"> 
+                                <strong>Quick Test</strong> - Use preset teams (2-3-1 vs 3-2-1) for fast performance testing
+                            </label>
+                        </div>
+                        <div class="form-group">
+                            <label>
+                                <input type="radio" name="batchTestMode" value="custom" onchange="updateBatchTestMode()"> 
+                                <strong>Custom Test</strong> - Use your configured Team 1 and Team 2
+                            </label>
+                        </div>
+                        
+                        <div class="grid-2">
+                            <div class="form-group">
+                                <label>Number of Games</label>
+                                <input type="number" id="batchTestGames" value="100" min="10" max="1000" step="10">
+                                <small style="color: #666;">Start with 50-100 for quick testing</small>
+                            </div>
+                            <div class="form-group">
+                                <label>Game Duration (seconds)</label>
+                                <input type="number" id="batchTestDuration" value="120" min="30" max="600" step="30">
+                                <small style="color: #666;">Use 60s for faster testing, 120s for realistic games</small>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>
+                                <input type="checkbox" id="batchTestParallel" checked> 
+                                Use Parallel Processing (faster - uses all CPU cores)
+                            </label>
+                        </div>
+                        
+                        <div id="batchTestInfo" class="alert alert-info" style="margin: 15px 0; font-size: 0.9em;">
+                            <strong>Quick Test Mode:</strong> Will run preset teams (2-3-1 vs 3-2-1) for fast performance testing.
+                        </div>
+                        
+                        <button onclick="runBatchTest()" id="batchTestBtn" class="btn-success" style="margin-top: 15px;">
+                            🚀 Run Batch Test
+                        </button>
+                        
+                        <div id="batchTestProgressContainer" style="margin-top: 20px; display: none;">
+                            <div class="progress-bar" style="margin: 15px 0;">
+                                <div class="progress-fill" id="batchTestProgressFill" style="width: 0%">0%</div>
+                            </div>
+                            <div id="batchTestProgressInfo" style="font-size: 0.9em; color: #666;">
+                                <p><strong>Progress:</strong> <span id="batchTestProgressText">0 / 0 games</span></p>
+                                <p><strong>Elapsed:</strong> <span id="batchTestElapsed">0s</span> | 
+                                   <strong>Est. Remaining:</strong> <span id="batchTestRemaining">Calculating...</span></p>
+                                <p><strong>Games per Second:</strong> <span id="batchTestSpeed">0.0</span></p>
+                            </div>
+                        </div>
+                        
+                        <div id="batchTestStatus" style="margin-top: 20px;"></div>
+                        
+                        <div id="batchTestResults" style="margin-top: 20px;"></div>
+                    </div>
+                </div>
+
+                <!-- Results Tab -->
+                <div id="resultsTab" class="tab-content">
+                    <div class="section">
+                        <div class="section-title">Optimization Progress</div>
+                        <div id="optimizationHistory"></div>
+                    </div>
+                    <div class="section">
+                        <div class="section-title">Best Configuration</div>
+                        <div id="bestConfiguration"></div>
+                    </div>
+                    <div class="section">
+                        <div class="section-title">Comparison Results</div>
+                        <div id="comparisonResults"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global state
+        let currentTaskId = null;
+        let statusCheckInterval = null;
+        let batchTestTaskId = null;
+        let batchTestCheckInterval = null;
+        let team1Config = {
+            formation: null,
+            tactics: {}
+        };
+        let team2Config = {
+            formation: null,
+            tactics: {}
+        };
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            loadDefaults();
+            updateOptimizeMode();
+            generateTacticsControls('team1');
+            generateTacticsControls('team2');
+            loadFormationPreset('team1', '2-3-1');
+            loadFormationPreset('team2', '3-2-1');
+        });
+
+        // Tab switching
+        function switchTab(tabName, event) {
+            // Remove active class from all tabs and content
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            
+            // Find the button to activate
+            let targetButton = null;
+            
+            // Check if event is valid and has target
+            try {
+                if (event !== null && event !== undefined && event.target && event.target.classList && event.target.classList.contains('tab')) {
+                    targetButton = event.target;
+                }
+            } catch (e) {
+                // Event is invalid, use fallback
+            }
+            
+            // Fallback: find button by matching tabName
+            if (!targetButton) {
+                const tabButtons = document.querySelectorAll('.tab');
+                const tabLabels = {
+                    'team1': 'Team 1 Configuration',
+                    'team2': 'Team 2 (Opponent)',
+                    'batchtest': 'Batch Test',
+                    'results': 'Results & Analysis'
+                };
+                tabButtons.forEach(btn => {
+                    if (btn.textContent.trim() === tabLabels[tabName]) {
+                        targetButton = btn;
+                    }
+                });
+            }
+            
+            // Activate the button and content
+            if (targetButton) {
+                targetButton.classList.add('active');
+            }
+            const tabContent = document.getElementById(tabName + 'Tab');
+            if (tabContent) {
+                tabContent.classList.add('active');
+            }
+        }
+
+        // Update slider value display
+        function updateSliderValue(id, value) {
+            document.getElementById(id + 'Value').textContent = parseFloat(value).toFixed(2);
+        }
+
+        // Load defaults
+        async function loadDefaults() {
+            try {
+                const response = await fetch('/api/presets/tactics');
+                const tactics = await response.json();
+                
+                team1Config.tactics = tactics;
+                team2Config.tactics = tactics;
+                
+                applyTacticsToControls('team1', tactics);
+                applyTacticsToControls('team2', tactics);
+                
+                showAlert('Defaults loaded successfully', 'success');
+            } catch (error) {
+                showAlert('Error loading defaults: ' + error.message, 'error');
+            }
+        }
+
+        // Generate tactics controls
+        function generateTacticsControls(team) {
+            const tacticsParams = [
+                {name: 'formation_fuzziness', label: 'Formation Fuzziness', min: 0, max: 2.0, step: 0.1},
+                {name: 'formation_adherence_rate', label: 'Formation Adherence', min: 0, max: 1.0, step: 0.05},
+                {name: 'ball_attraction_strength', label: 'Ball Attraction', min: 0, max: 1.0, step: 0.05},
+                {name: 'pass_propensity', label: 'Pass Propensity', min: 0, max: 1.0, step: 0.05},
+                {name: 'shoot_propensity', label: 'Shoot Propensity', min: 0, max: 1.0, step: 0.05},
+                {name: 'pass_accuracy', label: 'Pass Accuracy', min: 0, max: 1.0, step: 0.05},
+                {name: 'shot_accuracy', label: 'Shot Accuracy', min: 0, max: 1.0, step: 0.05},
+                {name: 'defensive_line_adherence', label: 'Defensive Line', min: 0, max: 1.0, step: 0.05},
+                {name: 'forward_push_rate', label: 'Forward Push Rate', min: 0, max: 1.0, step: 0.05},
+                {name: 'ball_reaction_distance', label: 'Ball Reaction Distance', min: 5, max: 20, step: 1},
+            ];
+
+            const container = document.getElementById(team + 'TacticsContainer');
+            let html = '';
+
+            tacticsParams.forEach(param => {
+                const defaultValue = param.name.includes('distance') ? 15 : 0.6;
+                html += `
+                    <div class="form-group">
+                        <label>${param.label}</label>
+                        <div class="param-slider-group">
+                            <input type="range" 
+                                   id="${team}_${param.name}" 
+                                   min="${param.min}" 
+                                   max="${param.max}" 
+                                   step="${param.step}" 
+                                   value="${defaultValue}"
+                                   oninput="updateTacticValue('${team}', '${param.name}', this.value)">
+                            <span class="value-display" id="${team}_${param.name}_value">${defaultValue}</span>
+                        </div>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
+        }
+
+        // Update tactic value
+        function updateTacticValue(team, name, value) {
+            const config = team === 'team1' ? team1Config : team2Config;
+            config.tactics[name] = parseFloat(value);
+            document.getElementById(`${team}_${name}_value`).textContent = parseFloat(value).toFixed(2);
+        }
+
+        // Apply tactics to controls
+        function applyTacticsToControls(team, tactics) {
+            Object.keys(tactics).forEach(name => {
+                const input = document.getElementById(`${team}_${name}`);
+                const valueDisplay = document.getElementById(`${team}_${name}_value`);
+                if (input && valueDisplay) {
+                    input.value = tactics[name];
+                    valueDisplay.textContent = parseFloat(tactics[name]).toFixed(2);
+                }
+            });
+        }
+
+        // Load formation preset
+        async function loadFormationPreset(team, presetName) {
+            if (!presetName) return;
+
+            try {
+                const response = await fetch(`/api/presets/formations`);
+                const presets = await response.json();
+                
+                if (presets[presetName]) {
+                    const config = team === 'team1' ? team1Config : team2Config;
+                    config.formation = presets[presetName];
+                    document.getElementById(team + 'FormationName').value = presetName;
+                    drawFormation(team, presets[presetName].positions);
+                }
+            } catch (error) {
+                showAlert('Error loading formation: ' + error.message, 'error');
+            }
+        }
+
+        // Draw formation
+        function drawFormation(team, positions) {
+            const canvas = document.getElementById(team + 'FormationCanvas');
+            const ctx = canvas.getContext('2d');
+            
+            // Clear
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Draw field background
+            ctx.fillStyle = '#2d5016';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Draw field lines
+            ctx.strokeStyle = '#ffffff';
+            ctx.lineWidth = 2;
+            ctx.strokeRect(5, 5, canvas.width - 10, canvas.height - 10);
+            
+            // Center line
+            ctx.beginPath();
+            ctx.moveTo(0, canvas.height / 2);
+            ctx.lineTo(canvas.width, canvas.height / 2);
+            ctx.stroke();
+            
+            // Draw goals
+            const goalWidth = 60;
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(canvas.width/2 - goalWidth/2, canvas.height - 15, goalWidth, 10);
+            ctx.fillRect(canvas.width/2 - goalWidth/2, 5, goalWidth, 10);
+            
+            // Draw players
+            positions.forEach((pos, idx) => {
+                const x = pos[0] * canvas.width;
+                const y = pos[1] * canvas.height;
+                
+                ctx.fillStyle = idx === 0 ? '#FFD700' : (idx <= 2 ? '#0066FF' : '#FF6600');
+                ctx.beginPath();
+                ctx.arc(x, y, 8, 0, Math.PI * 2);
+                ctx.fill();
+                
+                ctx.strokeStyle = '#ffffff';
+                ctx.lineWidth = 1;
+                ctx.stroke();
+            });
+        }
+
+        // Update optimization mode
+        function updateOptimizeMode() {
+            const mode = document.getElementById('optimizeMode').value;
+            const info = document.getElementById('optimizeModeInfo');
+            
+            const messages = {
+                'formation': 'Will optimize player positions only, keeping tactics fixed.',
+                'tactics': 'Will optimize tactical parameters only, keeping formation fixed.',
+                'both': 'Will optimize both formation and tactics simultaneously (slower but more thorough).'
+            };
+            
+            info.textContent = messages[mode];
+        }
+
+        // Start optimization
+        async function startOptimization() {
+            const mode = document.getElementById('optimizeMode').value;
+            
+            // Get configurations
+            const team1Formation = team1Config.formation || (await fetch('/api/presets/formations').then(r => r.json()))['2-3-1'];
+            const team1Tactics = getTacticsFromControls('team1');
+            const team2Formation = team2Config.formation || (await fetch('/api/presets/formations').then(r => r.json()))['3-2-1'];
+            const team2Tactics = getTacticsFromControls('team2');
+            
+            const opponentConfig = {
+                formation: team2Formation,
+                tactics: team2Tactics,
+                team_id: 1
+            };
+            
+            const baseConfig = {
+                formation: team1Formation,
+                tactics: team1Tactics
+            };
+            
+            // Get optimization parameters
+            const optParams = {
+                population_size: parseInt(document.getElementById('populationSize').value),
+                generations: parseInt(document.getElementById('generations').value),
+                num_games: parseInt(document.getElementById('numGames').value),
+                mutation_rate: parseFloat(document.getElementById('mutationRate').value),
+                mutation_strength: parseFloat(document.getElementById('mutationStrength').value),
+                opponent: opponentConfig
+            };
+            
+            let endpoint = '';
+            if (mode === 'formation') {
+                endpoint = '/api/optimize/formation';
+                optParams.base_formation = baseConfig.formation;
+                optParams.tactics = baseConfig.tactics;
+            } else if (mode === 'tactics') {
+                endpoint = '/api/optimize/tactics';
+                optParams.formation = baseConfig.formation;
+                optParams.base_tactics = baseConfig.tactics;
+            } else {
+                endpoint = '/api/optimize/both';
+                optParams.base_formation = baseConfig.formation;
+                optParams.base_tactics = baseConfig.tactics;
+            }
+            
+            try {
+                const response = await fetch(endpoint, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(optParams)
+                });
+                
+                const result = await response.json();
+                
+                if (result.status === 'started') {
+                    currentTaskId = result.task_id;
+                    document.getElementById('startOptBtn').disabled = true;
+                    document.getElementById('stopOptBtn').disabled = false;
+                    
+                    // Show progress bar immediately
+                    const progressBar = document.getElementById('progressBar');
+                    if (progressBar) {
+                        progressBar.style.display = 'block';
+                    }
+                    const progressFill = document.getElementById('progressFill');
+                    if (progressFill) {
+                        progressFill.style.width = '0%';
+                        progressFill.textContent = '0%';
+                    }
+                    
+                    // Set initial status display
+                    const statusDiv = document.getElementById('optimizationStatus');
+                    if (statusDiv) {
+                        statusDiv.innerHTML = `
+                            <p><span class="status-indicator status-running"></span><strong>Optimization Starting...</strong></p>
+                            <p><strong>Generation:</strong> 0 / ${document.getElementById('generations').value || 20}</p>
+                            <p><strong>Phase:</strong> Initializing...</p>
+                            <p>Please wait while the optimization begins...</p>
+                        `;
+                    }
+                    
+                    showAlert('Optimization started! Task ID: ' + result.task_id, 'success');
+                    
+                    // Switch to results tab without event
+                    switchTab('results', null);
+                    
+                    // Start status checking (check every 1 second for better responsiveness)
+                    statusCheckInterval = setInterval(checkOptimizationStatus, 1000);
+                    
+                    // Check status immediately and then again after a short delay
+                    checkOptimizationStatus();
+                    setTimeout(() => checkOptimizationStatus(), 500);
+                    setTimeout(() => checkOptimizationStatus(), 2000);
+                } else {
+                    showAlert('Error: ' + result.message, 'error');
+                }
+            } catch (error) {
+                console.error('Error starting optimization:', error);
+                showAlert('Error starting optimization: ' + (error.message || 'Unknown error'), 'error');
+                // Re-enable button on error
+                document.getElementById('startOptBtn').disabled = false;
+                document.getElementById('stopOptBtn').disabled = true;
+            }
+        }
+
+        // Update live chart during optimization
+        function updateLiveChart(history) {
+            if (!history || history.length === 0) return;
+            
+            const gens = history.map(h => h.generation || h.generation + 1);
+            const best = history.map(h => h.best_fitness);
+            const avg = history.map(h => h.avg_fitness);
+            
+            const trace1 = {x: gens, y: best, name: 'Best Fitness', type: 'scatter', mode: 'lines+markers', line: {color: 'green', width: 2}, marker: {size: 6}};
+            const trace2 = {x: gens, y: avg, name: 'Average Fitness', type: 'scatter', mode: 'lines+markers', line: {color: 'blue', width: 2}, marker: {size: 6}};
+            
+            Plotly.newPlot('optimizationHistory', [trace1, trace2], {
+                title: 'Optimization Progress (Live)',
+                xaxis: {title: 'Generation'},
+                yaxis: {title: 'Fitness'},
+                showlegend: true
+            }, {responsive: true});
+        }
+
+        // Check optimization status
+        async function checkOptimizationStatus() {
+            if (!currentTaskId) {
+                console.log('No current task ID');
+                return;
+            }
+            
+            try {
+                const response = await fetch(`/api/optimize/status/${currentTaskId}`);
+                if (!response.ok) {
+                    console.error('Status check failed:', response.status, response.statusText);
+                    return;
+                }
+                
+                const status = await response.json();
+                
+                if (!status) {
+                    console.error('Empty status received');
+                    return;
+                }
+                
+                console.log('Status update:', status.status, 'Generation:', status.generation);
+                
+                if (status.status === 'completed') {
+                    clearInterval(statusCheckInterval);
+                    document.getElementById('startOptBtn').disabled = false;
+                    document.getElementById('stopOptBtn').disabled = true;
+                    
+                    // Update progress bar to 100%
+                    const progressFill = document.getElementById('progressFill');
+                    if (progressFill) {
+                        progressFill.style.width = '100%';
+                        progressFill.textContent = '100%';
+                    }
+                    
+                    // Hide progress info
+                    const optProgressInfo = document.getElementById('optimizationProgressInfo');
+                    if (optProgressInfo) {
+                        optProgressInfo.style.display = 'none';
+                    }
+                    
+                    displayOptimizationResults(status);
+                    showAlert('Optimization completed!', 'success');
+                } else if (status.status === 'error') {
+                    clearInterval(statusCheckInterval);
+                    document.getElementById('startOptBtn').disabled = false;
+                    document.getElementById('stopOptBtn').disabled = true;
+                    showAlert('Optimization error: ' + (status.message || 'Unknown error'), 'error');
+                    console.error('Optimization error:', status);
+                } else if (status.status === 'running' || status.status === 'unknown') {
+                    // Show running status even if status is 'unknown' (might be initializing)
+                    const generation = status.generation || 0;
+                    const totalGenerations = status.total_generations || 1;
+                    const progress = Math.max(0, Math.min(100, (generation / totalGenerations) * 100));
+                    
+                    // Show progress bar
+                    const progressBar = document.getElementById('progressBar');
+                    if (progressBar) {
+                        progressBar.style.display = 'block';
+                    }
+                    
+                    const progressFill = document.getElementById('progressFill');
+                    if (progressFill) {
+                        progressFill.style.width = progress + '%';
+                        progressFill.textContent = Math.round(progress) + '%';
+                    }
+                    
+                    // Show and update progress info
+                    const optProgressInfo = document.getElementById('optimizationProgressInfo');
+                    if (optProgressInfo) {
+                        optProgressInfo.style.display = 'block';
+                        document.getElementById('optGenCurrent').textContent = generation;
+                        document.getElementById('optGenTotal').textContent = totalGenerations;
+                        
+                        const formatTime = (seconds) => {
+                            if (!seconds || seconds < 0) return '0s';
+                            if (seconds < 60) return Math.round(seconds) + 's';
+                            const mins = Math.floor(seconds / 60);
+                            const secs = Math.round(seconds % 60);
+                            return mins + 'm ' + secs + 's';
+                        };
+                        
+                        if (status.total_elapsed_time !== undefined && status.total_elapsed_time > 0) {
+                            document.getElementById('optElapsed').textContent = formatTime(status.total_elapsed_time);
+                        }
+                        
+                        if (status.estimated_remaining_time !== undefined && status.estimated_remaining_time > 0) {
+                            document.getElementById('optRemaining').textContent = formatTime(status.estimated_remaining_time);
+                        } else {
+                            document.getElementById('optRemaining').textContent = 'Calculating...';
+                        }
+                    }
+                    
+                    // Format time
+                    const formatTime = (seconds) => {
+                        if (!seconds || seconds < 0) return '0s';
+                        if (seconds < 60) return Math.round(seconds) + 's';
+                        const mins = Math.floor(seconds / 60);
+                        const secs = Math.round(seconds % 60);
+                        return mins + 'm ' + secs + 's';
+                    };
+                    
+                    let statusHtml = `
+                        <p><span class="status-indicator status-running"></span><strong>Optimization Running...</strong></p>
+                        <p><strong>Generation:</strong> ${generation} / ${totalGenerations}</p>
+                    `;
+                    
+                    if (status.current_phase) {
+                        statusHtml += `<p><strong>Phase:</strong> ${status.current_phase}</p>`;
+                    } else {
+                        statusHtml += `<p><strong>Phase:</strong> Initializing...</p>`;
+                    }
+                    
+                    if (status.best_fitness !== undefined && status.best_fitness !== null && typeof status.best_fitness === 'number' && !isNaN(status.best_fitness)) {
+                        statusHtml += `<p><strong>Best Fitness:</strong> ${status.best_fitness.toFixed(2)}</p>`;
+                    }
+                    
+                    if (status.avg_fitness !== undefined && status.avg_fitness !== null) {
+                        statusHtml += `<p><strong>Avg Fitness:</strong> ${status.avg_fitness.toFixed(2)}</p>`;
+                    }
+                    
+                    if (status.total_elapsed_time !== undefined && status.total_elapsed_time > 0) {
+                        statusHtml += `<p><strong>Elapsed Time:</strong> ${formatTime(status.total_elapsed_time)}</p>`;
+                    }
+                    
+                    if (status.estimated_remaining_time !== undefined && status.estimated_remaining_time > 0) {
+                        statusHtml += `<p><strong>Est. Remaining:</strong> ${formatTime(status.estimated_remaining_time)}</p>`;
+                    }
+                    
+                    if (status.gen_elapsed_time !== undefined && status.gen_elapsed_time > 0) {
+                        statusHtml += `<p><strong>Last Gen Time:</strong> ${formatTime(status.gen_elapsed_time)}</p>`;
+                    }
+                    
+                    const statusDiv = document.getElementById('optimizationStatus');
+                    if (statusDiv) {
+                        statusDiv.innerHTML = statusHtml;
+                    }
+                    
+                    // Update results tab with live chart if history exists
+                    if (status.history && status.history.length > 0) {
+                        updateLiveChart(status.history);
+                    }
+                }
+            } catch (error) {
+                console.error('Error checking status:', error);
+                // Show error in status
+                const statusDiv = document.getElementById('optimizationStatus');
+                if (statusDiv) {
+                    statusDiv.innerHTML = `<p style="color: red;">Error checking status: ${error.message}</p>`;
+                }
+            }
+        }
+
+        // Display optimization results
+        function displayOptimizationResults(status) {
+            const historyDiv = document.getElementById('optimizationHistory');
+            const bestDiv = document.getElementById('bestConfiguration');
+            
+            if (status.history) {
+                // Plot history
+                const gens = status.history.map(h => h.generation);
+                const best = status.history.map(h => h.best_fitness);
+                const avg = status.history.map(h => h.avg_fitness);
+                
+                const trace1 = {x: gens, y: best, name: 'Best Fitness', type: 'scatter', line: {color: 'green'}};
+                const trace2 = {x: gens, y: avg, name: 'Average Fitness', type: 'scatter', line: {color: 'blue'}};
+                
+                Plotly.newPlot('optimizationHistory', [trace1, trace2], {
+                    title: 'Optimization Progress',
+                    xaxis: {title: 'Generation'},
+                    yaxis: {title: 'Fitness'}
+                });
+            }
+            
+            // Display best configuration
+            let configHtml = `<div class="result-card">`;
+            configHtml += `<h4>Best Fitness: ${status.best_fitness.toFixed(2)}</h4>`;
+            
+            if (status.best_formation) {
+                configHtml += `<p><strong>Formation:</strong> ${status.best_formation.name}</p>`;
+            }
+            
+            if (status.best_tactics) {
+                configHtml += `<p><strong>Best Tactics:</strong></p><ul>`;
+                Object.entries(status.best_tactics).forEach(([key, value]) => {
+                    configHtml += `<li>${key}: ${value.toFixed(3)}</li>`;
+                });
+                configHtml += `</ul>`;
+            }
+            
+            if (status.best_config) {
+                configHtml += `<p><strong>Complete Configuration</strong></p>`;
+                configHtml += `<p>Formation: ${status.best_config.formation.name}</p>`;
+            }
+            
+            configHtml += `</div>`;
+            bestDiv.innerHTML = configHtml;
+        }
+
+        // Get tactics from controls
+        function getTacticsFromControls(team) {
+            const tactics = {};
+            const inputs = document.querySelectorAll(`#${team}TacticsContainer input[type="range"]`);
+            inputs.forEach(input => {
+                const name = input.id.replace(team + '_', '');
+                tactics[name] = parseFloat(input.value);
+            });
+            return tactics;
+        }
+
+        // Save configuration
+        async function saveCurrentConfig() {
+            const filename = prompt('Enter filename (without .json):');
+            if (!filename) return;
+            
+            const config = {
+                team1: {
+                    formation: team1Config.formation,
+                    tactics: getTacticsFromControls('team1')
+                },
+                team2: {
+                    formation: team2Config.formation,
+                    tactics: getTacticsFromControls('team2')
+                },
+                timestamp: new Date().toISOString()
+            };
+            
+            try {
+                const response = await fetch('/api/team_config/save', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({filename: filename, config: config})
+                });
+                
+                const result = await response.json();
+                
+                if (result.status === 'success') {
+                    showAlert('Configuration saved successfully!', 'success');
+                } else {
+                    showAlert('Error: ' + result.message, 'error');
+                }
+            } catch (error) {
+                showAlert('Error saving: ' + error.message, 'error');
+            }
+        }
+
+        // Load configuration
+        async function loadConfiguration() {
+            try {
+                const response = await fetch('/api/team_config/list');
+                const data = await response.json();
+                
+                if (data.files.length === 0) {
+                    showAlert('No saved configurations found', 'info');
+                    return;
+                }
+                
+                const fileList = data.files.map(f => `<div class="file-item" onclick="loadConfigFile('${f}')">${f}</div>`).join('');
+                const fileSelectHtml = `<div class="file-list">${fileList}</div>`;
+                
+                document.getElementById('comparisonResults').innerHTML = fileSelectHtml;
+                switchTab('results', null);
+            } catch (error) {
+                showAlert('Error loading file list: ' + error.message, 'error');
+            }
+        }
+
+        async function loadConfigFile(filename) {
+            try {
+                const response = await fetch('/api/team_config/load', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({filename: filename})
+                });
+                
+                const result = await response.json();
+                
+                if (result.status === 'success') {
+                    const config = result.config;
+                    
+                    if (config.team1) {
+                        team1Config = config.team1;
+                        if (config.team1.formation) {
+                            drawFormation('team1', config.team1.formation.positions);
+                            document.getElementById('team1FormationName').value = config.team1.formation.name;
+                        }
+                        applyTacticsToControls('team1', config.team1.tactics);
+                    }
+                    
+                    if (config.team2) {
+                        team2Config = config.team2;
+                        if (config.team2.formation) {
+                            drawFormation('team2', config.team2.formation.positions);
+                            document.getElementById('team2FormationName').value = config.team2.formation.name;
+                        }
+                        applyTacticsToControls('team2', config.team2.tactics);
+                    }
+                    
+                    showAlert('Configuration loaded successfully!', 'success');
+                } else {
+                    showAlert('Error: ' + result.message, 'error');
+                }
+            } catch (error) {
+                showAlert('Error loading: ' + error.message, 'error');
+            }
+        }
+
+        // Run comparison
+        async function runComparison() {
+            const numGames = parseInt(prompt('Number of games to run:', '50'));
+            if (!numGames || numGames < 1) return;
+            
+            // Get configurations
+            const team1Formation = team1Config.formation || (await fetch('/api/presets/formations').then(r => r.json()))['2-3-1'];
+            const team1Tactics = getTacticsFromControls('team1');
+            const team2Formation = team2Config.formation || (await fetch('/api/presets/formations').then(r => r.json()))['3-2-1'];
+            const team2Tactics = getTacticsFromControls('team2');
+            
+            const config1 = {
+                formation: team1Formation,
+                tactics: team1Tactics,
+                team_id: 0
+            };
+            
+            const config2 = {
+                formation: team2Formation,
+                tactics: team2Tactics,
+                team_id: 1
+            };
+            
+            try {
+                showAlert('Running comparison...', 'info');
+                
+                const response = await fetch('/api/compare', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        team1: config1,
+                        team2: config2,
+                        num_games: numGames,
+                        parallel: true
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (result.status === 'success') {
+                    displayComparisonResults(result.analysis);
+                    showAlert('Comparison completed!', 'success');
+                    switchTab('results', null);
+                } else {
+                    showAlert('Error: ' + result.message, 'error');
+                }
+            } catch (error) {
+                showAlert('Error running comparison: ' + error.message, 'error');
+            }
+        }
+
+        // Display comparison results
+        function displayComparisonResults(analysis) {
+            const html = `
+                <div class="result-card">
+                    <h4>Comparison Results (${analysis.num_games} games)</h4>
+                    <div class="grid-2">
+                        <div>
+                            <h5>Team 1</h5>
+                            <p>Wins: ${analysis.team1.wins} (${(analysis.team1.win_rate * 100).toFixed(1)}%)</p>
+                            <p>Avg Goals: ${analysis.team1.avg_goals.toFixed(2)} ± ${analysis.team1.std_goals.toFixed(2)}</p>
+                            <p>Avg Shots: ${analysis.team1.avg_shots.toFixed(1)}</p>
+                            <p>Avg Passes: ${analysis.team1.avg_passes.toFixed(1)}</p>
+                        </div>
+                        <div>
+                            <h5>Team 2</h5>
+                            <p>Wins: ${analysis.team2.wins} (${(analysis.team2.win_rate * 100).toFixed(1)}%)</p>
+                            <p>Avg Goals: ${analysis.team2.avg_goals.toFixed(2)} ± ${analysis.team2.std_goals.toFixed(2)}</p>
+                            <p>Avg Shots: ${analysis.team2.avg_shots.toFixed(1)}</p>
+                            <p>Avg Passes: ${analysis.team2.avg_passes.toFixed(1)}</p>
+                        </div>
+                    </div>
+                    <p><strong>Draws:</strong> ${analysis.draws} (${(analysis.draw_rate * 100).toFixed(1)}%)</p>
+                </div>
+            `;
+            
+            document.getElementById('comparisonResults').innerHTML = html;
+        }
+
+        // Stop optimization
+        function stopOptimization() {
+            if (statusCheckInterval) {
+                clearInterval(statusCheckInterval);
+                statusCheckInterval = null;
+            }
+            currentTaskId = null;
+            document.getElementById('startOptBtn').disabled = false;
+            document.getElementById('stopOptBtn').disabled = true;
+            showAlert('Optimization stopped', 'info');
+        }
+
+        // Show alert
+        function showAlert(message, type) {
+            const alert = document.createElement('div');
+            alert.className = `alert alert-${type}`;
+            alert.textContent = message;
+            alert.style.position = 'fixed';
+            alert.style.top = '20px';
+            alert.style.right = '20px';
+            alert.style.zIndex = '10000';
+            alert.style.minWidth = '300px';
+            
+            document.body.appendChild(alert);
+            
+            setTimeout(() => {
+                alert.remove();
+            }, 5000);
+        }
+
+        // Edit formation (placeholder)
+        function editFormation(team) {
+            alert('Formation editor coming soon! For now, use preset formations or modify positions in the saved JSON files.');
+        }
+
+        // Update batch test mode display
+        function updateBatchTestMode() {
+            const mode = document.querySelector('input[name="batchTestMode"]:checked').value;
+            const infoDiv = document.getElementById('batchTestInfo');
+            
+            if (mode === 'quick') {
+                infoDiv.innerHTML = '<strong>Quick Test Mode:</strong> Will run preset teams (2-3-1 vs 3-2-1) for fast performance testing.';
+                infoDiv.className = 'alert alert-info';
+            } else {
+                infoDiv.innerHTML = '<strong>Custom Test Mode:</strong> Will use your configured Team 1 and Team 2 from the Configuration tabs.';
+                infoDiv.className = 'alert alert-info';
+            }
+        }
+
+        // Run batch test
+        async function runBatchTest() {
+            const numGames = parseInt(document.getElementById('batchTestGames').value);
+            const gameDuration = parseInt(document.getElementById('batchTestDuration').value);
+            const parallel = document.getElementById('batchTestParallel').checked;
+            const mode = document.querySelector('input[name="batchTestMode"]:checked').value;
+            
+            if (numGames < 1) {
+                showAlert('Please enter a valid number of games', 'error');
+                return;
+            }
+            
+            const btn = document.getElementById('batchTestBtn');
+            const statusDiv = document.getElementById('batchTestStatus');
+            const resultsDiv = document.getElementById('batchTestResults');
+            
+            // Clear any existing intervals
+            if (batchTestCheckInterval) {
+                clearInterval(batchTestCheckInterval);
+            }
+            
+            // Disable button and show status
+            btn.disabled = true;
+            btn.textContent = '⏳ Running...';
+            
+            const progressContainer = document.getElementById('batchTestProgressContainer');
+            progressContainer.style.display = 'none';
+            
+            statusDiv.innerHTML = `
+                <div class="alert alert-info">
+                    <p><strong>Starting batch test...</strong></p>
+                    <p>Games: ${numGames}</p>
+                    <p>Duration: ${gameDuration}s per game</p>
+                    <p>Parallel: ${parallel ? 'Yes' : 'No'}</p>
+                    <p>Mode: ${mode === 'quick' ? 'Quick (preset teams)' : 'Custom (your teams)'}</p>
+                </div>
+            `;
+            resultsDiv.innerHTML = '';
+            
+            try {
+                let endpoint = '/api/batch_test';
+                let body = {
+                    num_games: numGames,
+                    game_duration: gameDuration,
+                    parallel: parallel,
+                    mode: mode
+                };
+                
+                // If custom mode, we need to handle it differently
+                // For now, let's use the batch_test endpoint with quick mode
+                // and add custom mode support later
+                
+                const response = await fetch(endpoint, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(body)
+                });
+                
+                const result = await response.json();
+                
+                if (result.status === 'started') {
+                    // Batch test started - begin progress tracking
+                    batchTestTaskId = result.task_id;
+                    progressContainer.style.display = 'block';
+                    
+                    // Start checking progress
+                    batchTestCheckInterval = setInterval(checkBatchTestStatus, 500); // Check every 0.5 seconds
+                    checkBatchTestStatus();
+                    
+                    statusDiv.innerHTML = `
+                        <div class="alert alert-info">
+                            <p><strong>Batch test started!</strong></p>
+                            <p>Tracking progress...</p>
+                        </div>
+                    `;
+                } else if (result.status === 'success') {
+                    // For backward compatibility (if endpoint returns immediately)
+                    displayBatchTestResults(result);
+                } else {
+                    statusDiv.innerHTML = `
+                        <div class="alert alert-error">
+                            <p><strong>Error:</strong> ${result.message || 'Unknown error'}</p>
+                        </div>
+                    `;
+                    btn.disabled = false;
+                    btn.textContent = '🚀 Run Batch Test';
+                }
+            } catch (error) {
+                statusDiv.innerHTML = `
+                    <div class="alert alert-error">
+                        <p><strong>Error:</strong> ${error.message}</p>
+                    </div>
+                `;
+                showAlert('Error running batch test: ' + error.message, 'error');
+                btn.disabled = false;
+                btn.textContent = '🚀 Run Batch Test';
+            }
+        }
+
+        // Check batch test status
+        async function checkBatchTestStatus() {
+            if (!batchTestTaskId) return;
+            
+            try {
+                const response = await fetch(`/api/batch_test/status/${batchTestTaskId}`);
+                if (!response.ok) {
+                    console.error('Status check failed:', response.status);
+                    return;
+                }
+                
+                const status = await response.json();
+                
+                if (status.status === 'completed') {
+                    clearInterval(batchTestCheckInterval);
+                    batchTestCheckInterval = null;
+                    
+                    displayBatchTestResults(status);
+                    
+                    document.getElementById('batchTestBtn').disabled = false;
+                    document.getElementById('batchTestBtn').textContent = '🚀 Run Batch Test';
+                    
+                    showAlert('Batch test completed!', 'success');
+                } else if (status.status === 'error') {
+                    clearInterval(batchTestCheckInterval);
+                    batchTestCheckInterval = null;
+                    
+                    document.getElementById('batchTestStatus').innerHTML = `
+                        <div class="alert alert-error">
+                            <p><strong>Error:</strong> ${status.error || 'Unknown error'}</p>
+                        </div>
+                    `;
+                    
+                    document.getElementById('batchTestBtn').disabled = false;
+                    document.getElementById('batchTestBtn').textContent = '🚀 Run Batch Test';
+                    
+                    showAlert('Batch test failed: ' + (status.error || 'Unknown error'), 'error');
+                } else if (status.status === 'running') {
+                    // Update progress
+                    const completed = status.games_completed || 0;
+                    const total = status.total_games || 1;
+                    const progress = (completed / total) * 100;
+                    
+                    const progressFill = document.getElementById('batchTestProgressFill');
+                    if (progressFill) {
+                        progressFill.style.width = progress + '%';
+                        progressFill.textContent = Math.round(progress) + '%';
+                    }
+                    
+                    // Update progress info
+                    document.getElementById('batchTestProgressText').textContent = `${completed} / ${total} games`;
+                    
+                    const formatTime = (seconds) => {
+                        if (!seconds || seconds < 0) return '0s';
+                        if (seconds < 60) return Math.round(seconds) + 's';
+                        const mins = Math.floor(seconds / 60);
+                        const secs = Math.round(seconds % 60);
+                        return mins + 'm ' + secs + 's';
+                    };
+                    
+                    const elapsed = status.elapsed_time || 0;
+                    const remaining = status.estimated_remaining || 0;
+                    
+                    document.getElementById('batchTestElapsed').textContent = formatTime(elapsed);
+                    document.getElementById('batchTestRemaining').textContent = remaining > 0 ? formatTime(remaining) : 'Calculating...';
+                    
+                    if (completed > 0 && elapsed > 0) {
+                        const gamesPerSec = completed / elapsed;
+                        document.getElementById('batchTestSpeed').textContent = gamesPerSec.toFixed(2);
+                    }
+                }
+            } catch (error) {
+                console.error('Error checking batch test status:', error);
+            }
+        }
+
+        // Display batch test results
+        function displayBatchTestResults(result) {
+            const perf = result.performance || {
+                total_time: result.elapsed_time || 0,
+                time_per_game: (result.elapsed_time || 0) / (result.total_games || 1),
+                games_per_second: result.games_per_second || 0,
+                num_games: result.total_games || 0,
+                parallel: true
+            };
+            const analysis = result.analysis;
+            const numGames = perf.num_games || result.total_games || 100;
+            
+            // Update progress bar to 100%
+            const progressFill = document.getElementById('batchTestProgressFill');
+            if (progressFill) {
+                progressFill.style.width = '100%';
+                progressFill.textContent = '100%';
+            }
+            
+            // Display performance metrics
+            let resultsHtml = `
+                <div class="result-card">
+                    <h4>Performance Metrics</h4>
+                    <div class="grid-2">
+                        <div>
+                            <p><strong>Total Time:</strong> ${perf.total_time.toFixed(2)}s</p>
+                            <p><strong>Time per Game:</strong> ${perf.time_per_game.toFixed(3)}s</p>
+                            <p><strong>Games per Second:</strong> ${perf.games_per_second.toFixed(2)}</p>
+                        </div>
+                        <div>
+                            <p><strong>Games Run:</strong> ${numGames}</p>
+                            <p><strong>Parallel:</strong> ${perf.parallel ? 'Yes' : 'No'}</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="result-card">
+                    <h4>Game Results (${numGames} games)</h4>
+                    <div class="grid-2">
+                        <div>
+                            <h5>Team 1 (2-3-1)</h5>
+                            <p><strong>Wins:</strong> ${analysis.team1.wins} (${(analysis.team1.win_rate * 100).toFixed(1)}%)</p>
+                            <p><strong>Avg Goals:</strong> ${analysis.team1.avg_goals.toFixed(2)} ± ${analysis.team1.std_goals.toFixed(2)}</p>
+                            <p><strong>Avg Shots:</strong> ${analysis.team1.avg_shots.toFixed(1)}</p>
+                            <p><strong>Avg Passes:</strong> ${analysis.team1.avg_passes.toFixed(1)}</p>
+                            <p><strong>Avg Possession:</strong> ${analysis.team1.avg_possession.toFixed(1)}s</p>
+                        </div>
+                        <div>
+                            <h5>Team 2 (3-2-1)</h5>
+                            <p><strong>Wins:</strong> ${analysis.team2.wins} (${(analysis.team2.win_rate * 100).toFixed(1)}%)</p>
+                            <p><strong>Avg Goals:</strong> ${analysis.team2.avg_goals.toFixed(2)} ± ${analysis.team2.std_goals.toFixed(2)}</p>
+                            <p><strong>Avg Shots:</strong> ${analysis.team2.avg_shots.toFixed(1)}</p>
+                            <p><strong>Avg Passes:</strong> ${analysis.team2.avg_passes.toFixed(1)}</p>
+                            <p><strong>Avg Possession:</strong> ${analysis.team2.avg_possession.toFixed(1)}s</p>
+                        </div>
+                    </div>
+                    <p style="margin-top: 15px;"><strong>Draws:</strong> ${analysis.draws} (${(analysis.draw_rate * 100).toFixed(1)}%)</p>
+                </div>
+            `;
+            
+            document.getElementById('batchTestResults').innerHTML = resultsHtml;
+            
+            document.getElementById('batchTestStatus').innerHTML = `
+                <div class="alert alert-success">
+                    <p><strong>✓ Batch test completed successfully!</strong></p>
+                    <p>Ran ${numGames} games in ${perf.total_time.toFixed(2)} seconds</p>
+                    <p>Performance: ${perf.games_per_second.toFixed(2)} games/second</p>
+                </div>
+            `;
+        }
+    </script>
+</body>
+</html>
+

@@ -1,0 +1,11 @@
+{
+  "id": "soccerSim",
+  "title": "SoccerSim",
+  "oneLiner": "Soccer simulator to find optimal positions given random variables and real interactions",
+  "demoUrl": "https://github.com/kylemath/soccerSim",
+  "screenshot": "https://raw.githubusercontent.com/kylemath/soccerSim/main/screenshot.png",
+  "kind": "project",
+  "categories": ["soccer", "simulator", "webpage"],
+  "tags": ["soccer", "simulator", "webpage"],
+  "status": "published"
+}
