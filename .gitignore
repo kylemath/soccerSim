@@ -10,6 +10,21 @@ ENV/
 dist/
 build/
 .DS_Store
+
+# Database files (ephemeral on Railway, can regenerate locally)
 *.db
 *.sqlite
+
+# Large validation results
+validation_results_*.json
+
+# Mac system files
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Video files
+*.mov
+*.mp4
+*.avi
 

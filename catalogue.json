@@ -2,7 +2,7 @@
   "id": "soccerSim",
   "title": "SoccerSim",
   "oneLiner": "Soccer simulator to find optimal positions given random variables and real interactions",
-  "demoUrl": "https://github.com/kylemath/soccerSim",
+  "demoUrl": "https://soccersim.up.railway.app",
   "screenshot": "https://raw.githubusercontent.com/kylemath/soccerSim/main/screenshot.png",
   "kind": "project",
   "categories": ["soccer", "simulator", "webpage"],

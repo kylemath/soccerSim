@@ -1,0 +1,23 @@
+# Exclude entire folders not needed for deployment
+docs/
+optimization/
+tests/
+data/
+templates/
+
+# System and environment files
+.DS_Store
+venv/
+.git/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Keep catalogue.json but exclude other json
+*.json
+!catalogue.json
+
+# Setup scripts not needed in production
+setup.sh
+
